@@ -21,10 +21,10 @@ service / on ep0 {
         service2client:Record[] records = catalogResult.records;
         int recordCount = records.length();
         log:printInfo("handled records for average computation", recordCount = recordCount);
+        // An empty catalog is a valid upstream state, not an application
+        // error — the contract documents only this one successful response.
         if recordCount == 0 {
-            log:printError("cannot compute average: service2 returned an empty catalog");
-            ServiceError errorBody = {code: 500, message: "failed to compute average from an empty catalog"};
-            return <http:InternalServerError>{body: errorBody};
+            return {average: 0};
         }
         int sum = 0;
         foreach service2client:Record rec in records {
