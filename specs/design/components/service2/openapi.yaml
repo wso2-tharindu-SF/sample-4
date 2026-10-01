@@ -1,0 +1,93 @@
+openapi: 3.0.3
+info:
+  title: Service2 API
+  version: 0.1.0
+servers:
+  - url: /
+paths:
+  /catalog:
+    get:
+      operationId: getCatalog
+      summary: The catalog Service2 currently serves
+      responses:
+        '200':
+          description: The current catalog and its records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Catalog'
+  /operations/mode:
+    put:
+      operationId: setCatalogMode
+      summary: Switch between full and empty catalog mode (internal only, never reachable by a user)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModeChange'
+      responses:
+        '200':
+          description: The mode was updated; the resulting catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Catalog'
+        '400':
+          description: The requested mode is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Record:
+      type: object
+      required: [id, name, score]
+      properties:
+        id:
+          type: integer
+          description: Record identifier
+        name:
+          type: string
+          description: Record name
+        score:
+          type: integer
+          description: Record score
+    Catalog:
+      type: object
+      required: [mode, records]
+      properties:
+        mode:
+          type: string
+          enum: [full, empty]
+          description: The catalog's current serving mode
+        records:
+          type: array
+          description: The records this catalog currently holds
+          items:
+            $ref: '#/components/schemas/Record'
+    ModeChange:
+      type: object
+      required: [mode]
+      properties:
+        mode:
+          type: string
+          enum: [full, empty]
+          description: The mode to switch to
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: integer
+          description: HTTP or application error code
+        message:
+          type: string
+          description: short human-readable label
+        description:
+          type: string
+          description: detailed explanation
+        moreInfo:
+          type: string
+          description: URI to documentation
