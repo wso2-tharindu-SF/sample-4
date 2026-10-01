@@ -21,13 +21,16 @@ service / on ep0 {
         service2client:Record[] records = catalogResult.records;
         int recordCount = records.length();
         log:printInfo("handled records for average computation", recordCount = recordCount);
+        if recordCount == 0 {
+            log:printError("cannot compute average: service2 returned an empty catalog");
+            ServiceError errorBody = {code: 500, message: "failed to compute average from an empty catalog"};
+            return <http:InternalServerError>{body: errorBody};
+        }
         int sum = 0;
         foreach service2client:Record rec in records {
             sum += rec.score;
         }
-        // Integer division truncates toward zero. No special case for an
-        // empty catalog — a divide-by-zero here is acceptable, undefined
-        // behaviour per the PRD, not a case this code path guards against.
+        // Integer division truncates toward zero.
         int average = sum / recordCount;
         return {average: average};
     }
